@@ -1,9 +1,11 @@
-import tap_tester.connections as connections
-import tap_tester.menagerie   as menagerie
-import tap_tester.runner      as runner
 import re
 
+import tap_tester.connections as connections
+import tap_tester.menagerie as menagerie
+import tap_tester.runner as runner
+
 from base import TestGithubBase
+
 
 class TestGithubDiscovery(TestGithubBase):
     def name(self):
@@ -14,43 +16,57 @@ class TestGithubDiscovery(TestGithubBase):
         return a dictionary with key of table name
         and value as a set of replication key fields
         """
-        return {table: properties.get(self.REPLICATION_KEYS, set())
-                for table, properties
-                in self.expected_metadata().items()}
+        return {
+            table: properties.get(self.REPLICATION_KEYS, set())
+            for table, properties in self.expected_metadata().items()
+        }
 
     def test_run(self):
         conn_id = connections.ensure_connection(self)
 
-        #run in check mode
+        # run in check mode
         check_job_name = runner.run_check_mode(self, conn_id)
 
-        #verify check exit codes
+        # verify check exit codes
         exit_status = menagerie.get_exit_status(conn_id, check_job_name)
         menagerie.verify_check_exit_status(self, exit_status, check_job_name)
 
         found_catalogs = menagerie.get_catalogs(conn_id)
-        self.assertGreater(len(found_catalogs), 0, msg="unable to locate schemas for connection {}".format(conn_id))
-        self.assertEqual(len(found_catalogs),
-                         len(self.expected_check_streams()),
-                         msg="Expected {} streams, actual was {} for connection {},"
-                         " actual {}".format(
-                             len(self.expected_check_streams()),
-                             len(found_catalogs),
-                             found_catalogs,
-                             conn_id))
+        self.assertGreater(
+            len(found_catalogs),
+            0,
+            msg="unable to locate schemas for connection {}".format(conn_id),
+        )
+        self.assertEqual(
+            len(found_catalogs),
+            len(self.expected_check_streams()),
+            msg="Expected {} streams, actual was {} for connection {},"
+            " actual {}".format(
+                len(self.expected_check_streams()),
+                len(found_catalogs),
+                found_catalogs,
+                conn_id,
+            ),
+        )
 
-        found_catalog_names = set(map(lambda c: c['tap_stream_id'], found_catalogs))
-        self.assertEqual(set(self.expected_check_streams()),
-                         set(found_catalog_names),
-                         msg="Expected streams don't match actual streams")
+        found_catalog_names = set(map(lambda c: c["tap_stream_id"], found_catalogs))
+        self.assertEqual(
+            set(self.expected_check_streams()),
+            set(found_catalog_names),
+            msg="Expected streams don't match actual streams",
+        )
 
         # Verify stream names follow naming convention
         # streams should only have lowercase alphas and underscores
-        self.assertTrue(all([re.fullmatch(r"[a-z_]+", name) for name in found_catalog_names]),
-                        msg="One or more streams don't follow standard naming")
+        self.assertTrue(
+            all([re.fullmatch(r"[a-z_]+", name) for name in found_catalog_names]),
+            msg="One or more streams don't follow standard naming",
+        )
 
         diff = self.expected_check_streams().symmetric_difference(found_catalog_names)
-        self.assertEqual(len(diff), 0, msg="discovered schemas do not match: {}".format(diff))
+        self.assertEqual(
+            len(diff), 0, msg="discovered schemas do not match: {}".format(diff)
+        )
         print("discovered schemas are OK")
 
         # Github does not write 100% correct metadata (ie no replication-method)
