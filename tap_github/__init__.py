@@ -82,8 +82,8 @@ def translate_state(state, catalog, repositories):
     nested_dict = lambda: collections.defaultdict(nested_dict)
     new_state = nested_dict()
 
-    for stream in catalog["streams"]:
-        stream_name = stream["tap_stream_id"]
+    for stream in catalog.streams:
+        stream_name = stream.tap_stream_id
         for repo in repositories:
             if bookmarks.get_bookmark(state, repo, stream_name):
                 return state
@@ -1172,7 +1172,7 @@ def get_selected_streams(catalog):
     breadcrumb and mdata with a 'selected' entry
     """
     selected_streams = []
-    for stream in catalog["streams"]:
+    for stream in catalog.streams:
         stream_metadata = stream["metadata"]
         if stream["schema"].get("selected", False):
             selected_streams.append(stream["tap_stream_id"])
@@ -1222,7 +1222,7 @@ def do_sync(config, state, catalog):
     session.headers.update({"authorization": "token " + access_token})
 
     # get selected streams, make sure stream dependencies are met
-    selected_stream_ids = get_selected_streams(catalog)
+    selected_stream_ids = catalog.get_selected_streams(state)
     validate_dependencies(selected_stream_ids)
 
     repositories = list(filter(None, config["repository"].split(" ")))
@@ -1233,10 +1233,10 @@ def do_sync(config, state, catalog):
     # pylint: disable=too-many-nested-blocks
     for repo in repositories:
         logger.info("Starting sync of repository: %s", repo)
-        for stream in catalog["streams"]:
-            stream_id = stream["tap_stream_id"]
-            stream_schema = stream["schema"]
-            mdata = stream["metadata"]
+        for stream in catalog.streams:
+            stream_id = stream.tap_stream_id
+            stream_schema = stream.schema
+            mdata = stream.metadata
 
             # if it is a "sub_stream", it will be sync'd by its parent
             if not SYNC_FUNCTIONS.get(stream_id):
@@ -1282,7 +1282,7 @@ def main():
     if args.discover:
         do_discover()
     else:
-        catalog = args.properties if args.properties else get_catalog()
+        catalog = args.catalog if args.catalog else get_catalog()
         do_sync(args.config, args.state, catalog)
 
 

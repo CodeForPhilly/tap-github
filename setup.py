@@ -4,13 +4,13 @@ from setuptools import setup, find_packages
 
 setup(
     name="tap-github",
-    version="1.9.0",
+    version="1.10.0",
     description="Singer.io tap for extracting data from the GitHub API",
     author="Stitch",
     url="http://singer.io",
     classifiers=["Programming Language :: Python :: 3 :: Only"],
     py_modules=["tap_github"],
-    install_requires=["singer-python==5.3.3", "requests==2.20.0"],
+    install_requires=["singer-python==5.9.1", "requests==2.25.1"],
     extras_require={
         "dev": [
             "pylint",
