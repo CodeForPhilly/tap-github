@@ -1,8 +1,8 @@
 # Related
 Closes #
 
-# Description of change
-<!-- Enter a description of what is changing -->
+# Change Description
+<!-- Enter a change description -->
 
 # Stakeholders
 <!-- @-list stakeholders -->
