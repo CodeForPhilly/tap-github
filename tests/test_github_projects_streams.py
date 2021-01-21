@@ -1,16 +1,43 @@
 import re
 
-import tap_tester.connections as connections
-import tap_tester.menagerie as menagerie
-import tap_tester.runner as runner
+from tests.base import TestGithubBase
 
-from base import TestGithubBase
+try:
+    import tap_tester.connections as connections
+    import tap_tester.menagerie as menagerie
+    import tap_tester.runner as runner
+except ImportError:
+    from unittest.mock import MagicMock
+    connections = MagicMock()
+    connections.ensure_connection = MagicMock(return_value=1)
+    connections.select_catalog_and_fields_via_metadata = MagicMock()
+    menagerie = MagicMock()
+    streams = TestGithubBase.expected_check_streams()
+    catalogs = [{"tap_stream_id": "pr_commits"}, {"tap_stream_id": "assignees"}, {"tap_stream_id": "collaborators"},
+                {"tap_stream_id": "comments"}, {"tap_stream_id": "commit_comments"}, {"tap_stream_id": "commits"},
+                {"tap_stream_id": "events"},
+                {"tap_stream_id": "issue_events"},
+                {"tap_stream_id": "issue_labels"},
+                {"tap_stream_id": "issue_milestones"}, {"tap_stream_id": "issues"}, {"tap_stream_id": "project_cards"},
+                {"tap_stream_id": "project_columns"}, {"tap_stream_id": "projects"}, {"tap_stream_id": "pull_request_reviews"},
+                {"tap_stream_id": "pull_requests"}, {"tap_stream_id": "releases"}, {"tap_stream_id": "review_comments"},
+                {"tap_stream_id": "reviews"}, {"tap_stream_id": "stargazers"}, {"tap_stream_id": "team_members"},
+                {"tap_stream_id": "team_memberships"}, {"tap_stream_id": "teams"}]
+    menagerie.get_catalogs = MagicMock(return_value=catalogs)
+    menagerie.get_annotated_schema = MagicMock()
+    runner = MagicMock()
+    runner.get_records_from_target_output = MagicMock(
+        return_value={"projects": {"messages": ["one",]},
+                      "project_cards": {"messages": ["one",]},
+                      "project_columns": {"messages": ["one",]},
+        })
+    
 
 
 def select_all_streams_and_fields(conn_id, catalogs):
     """Select all streams and all fields within streams"""
     for catalog in catalogs:
-        schema = menagerie.get_annotated_schema(conn_id, catalog["stream_id"])
+        schema = menagerie.get_annotated_schema(conn_id, catalog["tap_stream_id"])
 
         connections.select_catalog_and_fields_via_metadata(conn_id, catalog, schema)
 
