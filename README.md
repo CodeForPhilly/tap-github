@@ -28,8 +28,17 @@ This tap:
     ```bash
     > virtualenv -p python3 venv
     > source venv/bin/activate
+    > python -m pip install git+https://github.com/dherbst/tap-github.git@cfp-main
+    ```
+
+   This will install the version in this repo.  If you want to install the singer tap use this instead:
+
+    ```bash
+    > virtualenv -p python3 venv
+    > source venv/bin/activate
     > pip install tap-github
     ```
+
 
 2. Create a GitHub access token
 
