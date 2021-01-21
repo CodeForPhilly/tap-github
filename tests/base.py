@@ -3,8 +3,13 @@ import unittest
 from datetime import datetime as dt
 from datetime import timedelta
 
-import tap_tester.connections as connections
-import tap_tester.menagerie as menagerie
+try: 
+    import tap_tester.connections as connections
+    import tap_tester.menagerie as menagerie
+except ImportError:
+    from unittest.mock import MagicMock, patch
+    connections = MagicMock()
+    menagerie = MagicMock()
 
 
 class TestGithubBase(unittest.TestCase):
@@ -133,9 +138,9 @@ class TestGithubBase(unittest.TestCase):
     ):
         """Select all streams and all fields within streams"""
         for catalog in catalogs:
-            if exclude_streams and catalog.get("stream_name") in exclude_streams:
+            if exclude_streams and catalog.tap_stream_id in exclude_streams:
                 continue
-            schema = menagerie.get_annotated_schema(conn_id, catalog["stream_id"])
+            # schema = menagerie.get_annotated_schema(conn_id, catalog.tap_stream_id)
             non_selected_properties = []
             if not select_all_fields:
                 # get a list of all properties so that none are selected
@@ -144,7 +149,7 @@ class TestGithubBase(unittest.TestCase):
                 )
                 # remove properties that are automatic
                 for prop in self.expected_automatic_fields().get(
-                    catalog["stream_name"], []
+                    catalog.tap_stream_name, []
                 ):
                     if prop in non_selected_properties:
                         del non_selected_properties[prop]

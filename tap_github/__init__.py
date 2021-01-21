@@ -1174,8 +1174,8 @@ def get_selected_streams(catalog):
     selected_streams = []
     for stream in catalog.streams:
         stream_metadata = stream["metadata"]
-        if stream["schema"].get("selected", False):
-            selected_streams.append(stream["tap_stream_id"])
+        if stream.schema.get("selected", False):
+            selected_streams.append(stream.tap_stream_id)
         else:
             for entry in stream_metadata:
                 # stream metadata will have empty breadcrumb
@@ -1186,8 +1186,8 @@ def get_selected_streams(catalog):
 
 
 def get_stream_from_catalog(stream_id, catalog):
-    for stream in catalog["streams"]:
-        if stream["tap_stream_id"] == stream_id:
+    for stream in catalog.streams:
+        if stream.tap_stream_id == stream_id:
             return stream
     return None
 
