@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="tap-github",
-    version="1.9.0",
+    version="1.9.0.cfp",
     description="Singer.io tap for extracting data from the GitHub API",
     author="Stitch",
     url="http://singer.io",
