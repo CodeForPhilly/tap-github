@@ -1,4 +1,3 @@
-import argparse
 import collections
 import json
 import os
@@ -159,19 +158,23 @@ class DependencyException(Exception):
     pass
 
 
-def validate_dependencies(selected_stream_ids):
+def validate_dependencies(selected_streams):
     errs = []
     msg_tmpl = (
         "Unable to extract {0} data. "
         "To receive {0} data, you also need to select {1}."
     )
 
-    if "reviews" in selected_stream_ids and "pull_requests" not in selected_stream_ids:
+    streams = {}
+    for stream in selected_streams:
+        streams[stream.tap_stream_id] = stream
+
+    if "reviews" in streams and "pull_requests" not in streams:
         errs.append(msg_tmpl.format("reviews", "pull_requests"))
 
     if (
-        "review_comments" in selected_stream_ids
-        and "pull_requests" not in selected_stream_ids
+        "review_comments" in streams
+        and "pull_requests" not in streams
     ):
         errs.append(msg_tmpl.format("review_comments", "pull_requests"))
 
@@ -1165,26 +1168,6 @@ def get_all_stargazers(schema, repo_path, state, mdata):
     return state
 
 
-def get_selected_streams(catalog):
-    """
-    Gets selected streams.  Checks schema's 'selected'
-    first -- and then checks metadata, looking for an empty
-    breadcrumb and mdata with a 'selected' entry
-    """
-    selected_streams = []
-    for stream in catalog.streams:
-        stream_metadata = stream["metadata"]
-        if stream.schema.get("selected", False):
-            selected_streams.append(stream.tap_stream_id)
-        else:
-            for entry in stream_metadata:
-                # stream metadata will have empty breadcrumb
-                if not entry["breadcrumb"] and entry["metadata"].get("selected", None):
-                    selected_streams.append(stream["tap_stream_id"])
-
-    return selected_streams
-
-
 def get_stream_from_catalog(stream_id, catalog):
     for stream in catalog.streams:
         if stream.tap_stream_id == stream_id:
@@ -1222,8 +1205,9 @@ def do_sync(config, state, catalog):
     session.headers.update({"authorization": "token " + access_token})
 
     # get selected streams, make sure stream dependencies are met
-    selected_stream_ids = catalog.get_selected_streams(state)
-    validate_dependencies(selected_stream_ids)
+    selected_streams = catalog.get_selected_streams(state)
+    selected_stream_ids = [s.tap_stream_id for s in selected_streams]
+    validate_dependencies(selected_streams)
 
     repositories = list(filter(None, config["repository"].split(" ")))
 
@@ -1235,7 +1219,7 @@ def do_sync(config, state, catalog):
         logger.info("Starting sync of repository: %s", repo)
         for stream in catalog.streams:
             stream_id = stream.tap_stream_id
-            stream_schema = stream.schema
+            stream_schema = stream.schema.to_dict()
             mdata = stream.metadata
 
             # if it is a "sub_stream", it will be sync'd by its parent
@@ -1244,7 +1228,7 @@ def do_sync(config, state, catalog):
 
             # if stream is selected, write schema and sync
             if stream_id in selected_stream_ids:
-                singer.write_schema(stream_id, stream_schema, stream["key_properties"])
+                singer.write_schema(stream_name=stream_id, schema=stream_schema, key_properties=stream.key_properties)
 
                 # get sync function and any sub streams
                 sync_func = SYNC_FUNCTIONS[stream_id]
@@ -1262,11 +1246,11 @@ def do_sync(config, state, catalog):
                     for sub_stream_id in sub_stream_ids:
                         if sub_stream_id in selected_stream_ids:
                             sub_stream = get_stream_from_catalog(sub_stream_id, catalog)
-                            stream_schemas[sub_stream_id] = sub_stream["schema"]
+                            stream_schemas[sub_stream_id] = sub_stream.schema
                             singer.write_schema(
                                 sub_stream_id,
-                                sub_stream["schema"],
-                                sub_stream["key_properties"],
+                                sub_stream.schema,
+                                sub_stream.key_properties,
                             )
 
                     # sync stream and it's sub streams
@@ -1281,9 +1265,11 @@ def main():
 
     if args.discover:
         do_discover()
-    else:
+    elif args.catalog:
         catalog = args.catalog if args.catalog else get_catalog()
         do_sync(args.config, args.state, catalog)
+    else:
+        logger.info("properties no longer supported")
 
 
 if __name__ == "__main__":
