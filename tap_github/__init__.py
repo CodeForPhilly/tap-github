@@ -14,27 +14,28 @@ logger = singer.get_logger()
 REQUIRED_CONFIG_KEYS = ["access_token", "repository"]
 
 KEY_PROPERTIES = {
-    "commits": ["sha"],
-    "comments": ["id"],
-    "issues": ["id"],
     "assignees": ["id"],
     "collaborators": ["id"],
-    "pull_requests": ["id"],
-    "stargazers": ["user_id"],
-    "releases": ["id"],
-    "reviews": ["id"],
-    "review_comments": ["id"],
-    "pr_commits": ["id"],
+    "commit_comments": ["id"],
+    "commits": ["sha"],
+    "comments": ["id"],
     "events": ["id"],
+    "issues": ["id"],
     "issue_events": ["id"],
     "issue_labels": ["id"],
     "issue_milestones": ["id"],
-    "pull_request_reviews": ["id"],
-    "commit_comments": ["id"],
+    "languages": [],
     "projects": ["id"],
     "project_columns": ["id"],
     "project_cards": ["id"],
+    "pull_requests": ["id"],
+    "pull_request_reviews": ["id"],
+    "pr_commits": ["id"],
+    "stargazers": ["user_id"],
+    "releases": ["id"],
     "repos": ["id"],
+    "reviews": ["id"],
+    "review_comments": ["id"],
     "teams": ["id"],
     "team_members": ["id"],
     "team_memberships": ["url"],
@@ -1127,6 +1128,33 @@ def get_all_comments(schema, repo_path, state, mdata):
     return state
 
 
+def get_all_languages(schema, repo_path, state, mdata):
+    """
+    https://docs.github.com/en/rest/reference/repos#list-repository-languages
+    """
+    with metrics.record_counter("languages") as counter:
+        for response in authed_get_all_pages(
+            "languages",
+            "https://api.github.com/repos/{}/languages".format(repo_path),
+        ):
+            languages = response.json()
+            extraction_time = singer.utils.now()
+            for lang in languages:
+                rec = {"date": singer.utils.strftime(extraction_time), "lang": lang, "bytes": languages[lang]}
+                singer.write_record(
+                    "languages", rec, time_extracted=extraction_time
+                )
+                singer.write_bookmark(
+                    state,
+                    repo_path,
+                    "languages",
+                    {"since": singer.utils.strftime(extraction_time)},
+                )
+            counter.increment()
+
+    return state
+
+
 def get_all_stargazers(schema, repo_path, state, mdata):
     """
     https://developer.github.com/v3/activity/starring/#list-stargazers
@@ -1191,6 +1219,7 @@ SYNC_FUNCTIONS = {
     "projects": get_all_projects,
     "commit_comments": get_all_commit_comments,
     "teams": get_all_teams,
+    "languages": get_all_languages,
 }
 
 SUB_STREAMS = {
