@@ -2,7 +2,8 @@
   "type": ["null", "object"],
   "properties": {
     "date": {
-      "type": ["date-time"]
+      "type": ["string"],
+      "format": "date-time"
     },
     "lang": {
       "type": ["string"]
