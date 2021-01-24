@@ -1275,10 +1275,10 @@ def do_sync(config, state, catalog):
                     for sub_stream_id in sub_stream_ids:
                         if sub_stream_id in selected_stream_ids:
                             sub_stream = get_stream_from_catalog(sub_stream_id, catalog)
-                            stream_schemas[sub_stream_id] = sub_stream.schema
+                            stream_schemas[sub_stream_id] = sub_stream.schema.to_dict()
                             singer.write_schema(
                                 sub_stream_id,
-                                sub_stream.schema,
+                                sub_stream.schema.to_dict(),
                                 sub_stream.key_properties,
                             )
 
