@@ -1140,7 +1140,12 @@ def get_all_languages(schema, repo_path, state, mdata):
             languages = response.json()
             extraction_time = singer.utils.now()
             for lang in languages:
-                rec = {"date": singer.utils.strftime(extraction_time), "lang": lang, "bytes": languages[lang]}
+                rec = {
+                    "date": singer.utils.strftime(extraction_time),
+                    "lang": lang,
+                    "bytes": languages[lang],
+                    "_sdc_repository": repo_path,
+                }
                 singer.write_record(
                     "languages", rec, time_extracted=extraction_time
                 )
