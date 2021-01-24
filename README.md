@@ -9,10 +9,11 @@ This tap:
 - Extracts the following resources from GitHub for a single repository:
   - [Assignees](https://developer.github.com/v3/issues/assignees/#list-assignees)
   - [Collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators)
+  - [Comments](https://developer.github.com/v3/issues/comments/#list-comments-in-a-repository)
   - [Commits](https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository)
   - [Issues](https://developer.github.com/v3/issues/#list-issues-for-a-repository)
+  - [Languages](https://docs.github.com/en/rest/reference/repos#list-repository-languages)
   - [Pull Requests](https://developer.github.com/v3/pulls/#list-pull-requests)
-  - [Comments](https://developer.github.com/v3/issues/comments/#list-comments-in-a-repository)
   - [Reviews](https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request)
   - [Review Comments](https://developer.github.com/v3/pulls/comments/)
   - [Stargazers](https://developer.github.com/v3/activity/starring/#list-stargazers)
@@ -58,14 +59,15 @@ This tap:
     {"access_token": "your-access-token",
      "repository": "singer-io/tap-github singer-io/getting-started"}
     ```
-4. Run the tap in discovery mode to get properties.json file
+4. Run the tap in discovery mode to get a `catalog.json` file
 
     ```bash
-    tap-github --config config.json --discover > properties.json
+    tap-github --config config.json --discover > catalog.json
     ```
-5. In the properties.json file, select the streams to sync
+5. In the catalog.json file, select the streams to sync
 
-    Each stream in the properties.json file has a "schema" entry.  To select a stream to sync, add `"selected": true` to that stream's "schema" entry.  For example, to sync the pull_requests stream:
+    Each stream in the properties.json file has a "schema" entry.  To select a stream to sync, add `"selected": true` to that stream's "schema" entry.
+    For example, to sync the pull_requests stream:
     ```
     ...
     "tap_stream_id": "pull_requests",
@@ -87,7 +89,7 @@ This tap:
     `tap-github` can be run with:
 
     ```bash
-    tap-github --config config.json --properties properties.json
+    tap-github --config config.json --catalog catalog.json
     ```
 
 ---
