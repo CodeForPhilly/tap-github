@@ -109,6 +109,13 @@ def giveup(error):
     """Return True if request should not be retried."""
     logger.error(error.response.text)
     response = error.response
+
+    logger.error("X-RateLimit-Limit=%s X-RateLimit-Remaining=%s X-RateLimit-Reset=%s",
+                response.headers.get('x-ratelimit-limit'),
+                response.headers.get('x-ratelimit-remaining'),
+                response.headers.get('x-ratelimit-reset')
+    )
+
     return not (response.status_code == 429 or response.status_code >= 500)
 
 
