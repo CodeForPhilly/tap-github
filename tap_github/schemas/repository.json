@@ -84,7 +84,7 @@
       "type": ["integer"]
     },
     "is_template": {
-      "type": ["boolean"]
+      "type": ["null", "boolean"]
     },
     "has_issues": {
       "type": ["boolean"]
