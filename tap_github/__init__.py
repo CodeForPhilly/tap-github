@@ -2,6 +2,7 @@ import collections
 import json
 import os
 
+import backoff
 import requests
 import singer
 import singer.bookmarks as bookmarks
@@ -104,7 +105,22 @@ def get_bookmark(state, repo, stream_name, bookmark_key):
     return None
 
 
+def giveup(error):
+    """Return True if request should not be retried."""
+    logger.error(error.response.text)
+    response = error.response
+    return not (response.status_code == 429 or response.status_code >= 500)
+
+
 # pylint: disable=dangerous-default-value
+@backoff.on_exception(
+    backoff.constant,
+    (requests.exceptions.RequestException),
+    jitter=backoff.random_jitter,
+    max_tries=5,
+    giveup=giveup,
+    interval=30,
+)
 def authed_get(source, url, headers={}):
     with metrics.http_request_timer(source) as timer:
         session.headers.update(headers)
@@ -1033,7 +1049,9 @@ def get_repository(schema, repo_path, state, mdata):
             extraction_time = singer.utils.now()
             repo["_sdc_repository"] = repo_path
             with singer.Transformer() as transformer:
-                rec = transformer.transform(repo, schema, metadata=metadata.to_map(mdata))
+                rec = transformer.transform(
+                    repo, schema, metadata=metadata.to_map(mdata)
+                )
                 singer.write_record("repository", rec, time_extracted=extraction_time)
                 singer.write_bookmark(
                     state,
