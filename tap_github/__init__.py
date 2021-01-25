@@ -1026,7 +1026,7 @@ def get_repository(schema, repo_path, state, mdata):
     """
     with metrics.record_counter("repository") as counter:
         for response in authed_get_all_pages(
-            "respository",
+            "repository",
             "https://api.github.com/repos/{}".format(repo_path),
         ):
             repo = response.json()
@@ -1034,7 +1034,7 @@ def get_repository(schema, repo_path, state, mdata):
             repo["_sdc_repository"] = repo_path
             with singer.Transformer() as transformer:
                 rec = transformer.transform(repo, schema, metadata=metadata.to_map(mdata))
-                singer.write_record("respository", rec, time_extracted=extraction_time)
+                singer.write_record("repository", rec, time_extracted=extraction_time)
                 singer.write_bookmark(
                     state,
                     repo_path,
