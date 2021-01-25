@@ -16,6 +16,7 @@ REQUIRED_CONFIG_KEYS = ["access_token", "repository"]
 KEY_PROPERTIES = {
     "assignees": ["id"],
     "collaborators": ["id"],
+    "contributors": ["id"],
     "commit_comments": ["id"],
     "commits": ["sha"],
     "comments": ["id"],
@@ -173,10 +174,7 @@ def validate_dependencies(selected_streams):
     if "reviews" in streams and "pull_requests" not in streams:
         errs.append(msg_tmpl.format("reviews", "pull_requests"))
 
-    if (
-        "review_comments" in streams
-        and "pull_requests" not in streams
-    ):
+    if "review_comments" in streams and "pull_requests" not in streams:
         errs.append(msg_tmpl.format("review_comments", "pull_requests"))
 
     if errs:
@@ -1019,6 +1017,35 @@ def get_all_collaborators(schema, repo_path, state, mdata):
     return state
 
 
+def get_all_contributors(schema, repo_path, state, mdata):
+    """
+    https://docs.github.com/en/rest/reference/repos#list-repository-contributors
+    """
+    with metrics.record_counter("contributors") as counter:
+        for response in authed_get_all_pages(
+            "contributors",
+            "https://api.github.com/repos/{}/contributors".format(repo_path),
+        ):
+            contributors = response.json()
+            extraction_time = singer.utils.now()
+            for contributor in contributors:
+                contributor["_sdc_repository"] = repo_path
+                with singer.Transformer() as transformer:
+                    rec = transformer.transform(
+                        contributor, schema, metadata=metadata.to_map(mdata)
+                    )
+                singer.write_record("contributors", rec, time_extracted=extraction_time)
+                singer.write_bookmark(
+                    state,
+                    repo_path,
+                    "contributor",
+                    {"since": singer.utils.strftime(extraction_time)},
+                )
+                counter.increment()
+
+    return state
+
+
 def get_all_commits(schema, repo_path, state, mdata):
     """
     https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository
@@ -1146,9 +1173,7 @@ def get_all_languages(schema, repo_path, state, mdata):
                     "bytes": languages[lang],
                     "_sdc_repository": repo_path,
                 }
-                singer.write_record(
-                    "languages", rec, time_extracted=extraction_time
-                )
+                singer.write_record("languages", rec, time_extracted=extraction_time)
                 singer.write_bookmark(
                     state,
                     repo_path,
@@ -1209,27 +1234,28 @@ def get_stream_from_catalog(stream_id, catalog):
 
 
 SYNC_FUNCTIONS = {
-    "commits": get_all_commits,
-    "comments": get_all_comments,
-    "issues": get_all_issues,
     "assignees": get_all_assignees,
     "collaborators": get_all_collaborators,
+    "contributors": get_all_contributors,
+    "comments": get_all_comments,
+    "commit_comments": get_all_commit_comments,
+    "commits": get_all_commits,
+    "events": get_all_events,
+    "issues": get_all_issues,
+    "issue_events": get_all_issue_events,
+    "issue_labels": get_all_issue_labels,
+    "issue_milestones": get_all_issue_milestones,
+    "languages": get_all_languages,
+    "projects": get_all_projects,
     "pull_requests": get_all_pull_requests,
     "releases": get_all_releases,
     "stargazers": get_all_stargazers,
-    "events": get_all_events,
-    "issue_events": get_all_issue_events,
-    "issue_milestones": get_all_issue_milestones,
-    "issue_labels": get_all_issue_labels,
-    "projects": get_all_projects,
-    "commit_comments": get_all_commit_comments,
     "teams": get_all_teams,
-    "languages": get_all_languages,
 }
 
 SUB_STREAMS = {
-    "pull_requests": ["reviews", "review_comments", "pr_commits"],
     "projects": ["project_cards", "project_columns"],
+    "pull_requests": ["reviews", "review_comments", "pr_commits"],
     "teams": ["team_members", "team_memberships"],
 }
 
@@ -1262,7 +1288,11 @@ def do_sync(config, state, catalog):
 
             # if stream is selected, write schema and sync
             if stream_id in selected_stream_ids:
-                singer.write_schema(stream_name=stream_id, schema=stream_schema, key_properties=stream.key_properties)
+                singer.write_schema(
+                    stream_name=stream_id,
+                    schema=stream_schema,
+                    key_properties=stream.key_properties,
+                )
 
                 # get sync function and any sub streams
                 sync_func = SYNC_FUNCTIONS[stream_id]

@@ -9,6 +9,7 @@ This tap:
 - Extracts the following resources from GitHub for a single repository:
   - [Assignees](https://developer.github.com/v3/issues/assignees/#list-assignees)
   - [Collaborators](https://developer.github.com/v3/repos/collaborators/#list-collaborators)
+  - [Contributors](https://docs.github.com/en/rest/reference/repos#list-repository-contributors)
   - [Comments](https://developer.github.com/v3/issues/comments/#list-comments-in-a-repository)
   - [Commits](https://developer.github.com/v3/repos/commits/#list-commits-on-a-repository)
   - [Issues](https://developer.github.com/v3/issues/#list-issues-for-a-repository)
