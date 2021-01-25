@@ -1,0 +1,127 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": false,
+  "properties": {
+    "_sdc_repository": {
+      "type": ["string"]
+    },
+    "id": {
+      "type": ["null", "string"]
+    },
+    "node_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "full_name": {
+      "type": ["null", "string"]
+    },
+    "owner": {
+      "type": ["null", "object"],
+      "additionalProperties": false,
+      "properties": {
+        "login": {
+          "type": ["null", "string"]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "private": {
+      "type": "boolean"
+    },
+    "html_url": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "fork": {
+      "type": "boolean"
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "homepage": {
+      "type": ["null", "string"]
+    },
+    "language": {
+      "type": ["null", "string"]
+    },
+    "default_branch": {
+      "type": ["null", "string"]
+    },
+    "forks_count": {
+      "type": ["integer"]
+    },
+    "forks": {
+      "type": ["integer"]
+    },
+    "stargazers_count": {
+      "type": ["integer"]
+    },
+    "watchers_count": {
+      "type": ["integer"]
+    },
+    "watchers": {
+      "type": ["integer"]
+    },
+    "size": {
+      "type": ["integer"]
+    },
+    "open_issues_count": {
+      "type": ["integer"]
+    },
+    "open_issues": {
+      "type": ["integer"]
+    },
+    "subscribers_count": {
+      "type": ["integer"]
+    },
+    "network_count": {
+      "type": ["integer"]
+    },
+    "is_template": {
+      "type": ["boolean"]
+    },
+    "has_issues": {
+      "type": ["boolean"]
+    },
+    "has_projects": {
+      "type": ["boolean"]
+    },
+    "has_wiki": {
+      "type": ["boolean"]
+    },
+    "has_pages": {
+      "type": ["boolean"]
+    },
+    "has_downloads": {
+      "type": ["boolean"]
+    },
+    "archived": {
+      "type": ["boolean"]
+    },
+    "disabled": {
+      "type": ["boolean"]
+    },
+    "visibilty": {
+      "type": ["null", "string"]
+    },
+    "pushed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+    
+  }
+}

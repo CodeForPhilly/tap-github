@@ -15,6 +15,7 @@ This tap:
   - [Issues](https://developer.github.com/v3/issues/#list-issues-for-a-repository)
   - [Languages](https://docs.github.com/en/rest/reference/repos#list-repository-languages)
   - [Pull Requests](https://developer.github.com/v3/pulls/#list-pull-requests)
+  - [Repository](https://docs.github.com/en/rest/reference/repos#get-a-repository)
   - [Reviews](https://developer.github.com/v3/pulls/reviews/#list-reviews-on-a-pull-request)
   - [Review Comments](https://developer.github.com/v3/pulls/comments/)
   - [Stargazers](https://developer.github.com/v3/activity/starring/#list-stargazers)
@@ -25,22 +26,13 @@ This tap:
 
 1. Install
 
-   We recommend using a virtualenv:
+   We recommend using a virtualenv to install the version in this repo.  
 
     ```bash
     > virtualenv -p python3 venv
     > source venv/bin/activate
     > python -m pip install git+https://github.com/dherbst/tap-github.git@cfp-main
     ```
-
-   This will install the version in this repo.  If you want to install the singer tap use this instead:
-
-    ```bash
-    > virtualenv -p python3 venv
-    > source venv/bin/activate
-    > pip install tap-github
-    ```
-
 
 2. Create a GitHub access token
 

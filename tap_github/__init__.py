@@ -35,6 +35,7 @@ KEY_PROPERTIES = {
     "stargazers": ["user_id"],
     "releases": ["id"],
     "repos": ["id"],
+    "repository": ["id"],
     "reviews": ["id"],
     "review_comments": ["id"],
     "teams": ["id"],
@@ -147,6 +148,8 @@ def load_schemas():
     schemas = {}
 
     for filename in os.listdir(get_abs_path("schemas")):
+        if not filename.endswith(".json"):
+            continue
         path = get_abs_path("schemas") + "/" + filename
         file_raw = filename.replace(".json", "")
         with open(path) as file:
@@ -1017,6 +1020,31 @@ def get_all_collaborators(schema, repo_path, state, mdata):
     return state
 
 
+def get_repository(schema, repo_path, state, mdata):
+    """
+    https://docs.github.com/en/rest/reference/repos#get-a-repository
+    """
+    with metrics.record_counter("contributors") as counter:
+        for response in authed_get_all_pages(
+            "respository",
+            "https://api.github.com/repos/{}".format(repo_path),
+        ):
+            repo = response.json()
+            extraction_time = singer.utils.now()
+            repo["_sdc_repository"] = repo_path
+            with singer.Transformer() as transformer:
+                rec = transformer.transform(repo, schema, metadata=metadata.to_map(mdata))
+                singer.write_record("respository", rec, time_extracted=extraction_time)
+                singer.write_bookmark(
+                    state,
+                    repo_path,
+                    "repository",
+                    {"since": singer.utils.strftime(extraction_time)},
+                )
+                counter.increment()
+    return state
+
+
 def get_all_contributors(schema, repo_path, state, mdata):
     """
     https://docs.github.com/en/rest/reference/repos#list-repository-contributors
@@ -1249,6 +1277,7 @@ SYNC_FUNCTIONS = {
     "projects": get_all_projects,
     "pull_requests": get_all_pull_requests,
     "releases": get_all_releases,
+    "repository": get_repository,
     "stargazers": get_all_stargazers,
     "teams": get_all_teams,
 }
