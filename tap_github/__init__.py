@@ -1024,7 +1024,7 @@ def get_repository(schema, repo_path, state, mdata):
     """
     https://docs.github.com/en/rest/reference/repos#get-a-repository
     """
-    with metrics.record_counter("contributors") as counter:
+    with metrics.record_counter("repository") as counter:
         for response in authed_get_all_pages(
             "respository",
             "https://api.github.com/repos/{}".format(repo_path),
