@@ -31,7 +31,7 @@ This tap:
     ```bash
     > virtualenv -p python3 venv
     > source venv/bin/activate
-    > python -m pip install git+https://github.com/dherbst/tap-github.git@cfp-main
+    > python -m pip install git+https://github.com/CodeForPhilly/tap-github.git@cfp-main
     ```
 
 2. Create a GitHub access token
@@ -87,4 +87,5 @@ This tap:
 
 ---
 
+Copyright &copy; 2021 CodeForPhilly
 Copyright &copy; 2018 Stitch

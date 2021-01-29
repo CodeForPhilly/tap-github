@@ -1,5 +1,12 @@
 # Changelog
 
+# 1.9.0-cfp
+  * Adds `languages` stream
+  * Adds `contributors` stream
+  * Adds `repository` stream
+  * Adds mock testing so pytest can be run outside of singer circleci
+  * Adds additional copyright notice to README.md
+
 # 1.9.0
   * Adds `issue_events` stream [#92](https://github.com/singer-io/tap-github/pull/92)
   * Makes `project_cards` stream a child of `project_columns`[#89](https://github.com/singer-io/tap-github/pull/89)
