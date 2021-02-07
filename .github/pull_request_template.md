@@ -1,8 +1,11 @@
-# Related
-Closes #
+# Description of change
+(write a short description or paste a link to JIRA)
 
-# Change Description
-<!-- Enter a change description -->
-
-# Stakeholders
-<!-- @-list stakeholders -->
+# Manual QA steps
+ - 
+ 
+# Risks
+ - 
+ 
+# Rollback steps
+ - revert this branch
